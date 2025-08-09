@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindTrack | Mood & Reflection Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f9f9f9;
+    }
+    .container {
+        max-width: 600px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    input, textarea, select, button {
+        width: 100%;
+        padding: 8px;
+        margin: 5px 0;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+    button {
+        background: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #0056b3;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>MindTrack | Daily Mood & Reflection</h2>
+    
+    <label for="role">Role</label>
+    <select id="role">
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+    </select>
+
+    <label for="mood">Mood</label>
+    <select id="mood">
+        <option value="Happy">😊 Happy</option>
+        <option value="Sad">😢 Sad</option>
+        <option value="Neutral">😐 Neutral</option>
+        <option value="Excited">🤩 Excited</option>
+        <option value="Tired">😴 Tired</option>
+    </select>
+
+    <label for="reflection">Reflection</label>
+    <textarea id="reflection" rows="3" placeholder="Write your thoughts..."></textarea>
+
+    <button onclick="saveEntry()">Save Entry</button>
+
+    <h3>Mood Trends</h3>
+    <canvas id="moodChart"></canvas>
+</div>
+
+<script>
+let moodData = JSON.parse(localStorage.getItem("moodEntries")) || [];
+
+function saveEntry() {
+    let role = document.getElementById("role").value;
+    let mood = document.getElementById("mood").value;
+    let reflection = document.getElementById("reflection").value;
+    let date = new Date().toLocaleDateString();
+
+    // Role-based feature restriction
+    if (role !== "admin" && moodData.length >= 10) {
+        alert("Upgrade to admin for unlimited entries.");
+        return;
+    }
+
+    if (mood && reflection) {
+        moodData.push({ date, mood, reflection });
+        localStorage.setItem("moodEntries", JSON.stringify(moodData));
+        updateChart();
+        document.getElementById("reflection").value = "";
+        alert("Entry saved successfully!");
+    } else {
+        alert("Please select a mood and write your reflection.");
+    }
+}
+
+function updateChart() {
+    let moodCounts = {};
+    moodData.forEach(entry => {
+        moodCounts[entry.mood] = (moodCounts[entry.mood] || 0) + 1;
+    });
+
+    let labels = Object.keys(moodCounts);
+    let counts = Object.values(moodCounts);
+
+    new Chart(document.getElementById("moodChart"), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Mood Frequency',
+                data: counts,
+                backgroundColor: ['#ffcc00', '#3399ff', '#cccccc', '#66ff66', '#ff6666']
+            }]
+        }
+    });
+}
+
+updateChart();
+</script>
+
+</body>
+</html>
